@@ -1,0 +1,30 @@
+{"kind": "exact", "question": "What does the KubePodCrashLooping alert mean?", "source": "kubernetes/KubePodCrashLooping.md"}
+{"kind": "exact", "question": "How do I fix etcdNoLeader?", "source": "etcd/etcdNoLeader.md"}
+{"kind": "exact", "question": "NodeClockSkewDetected is firing, what should I do?", "source": "node/NodeClockSkewDetected.md"}
+{"kind": "exact", "question": "What is the Watchdog alert for?", "source": "general/Watchdog.md"}
+{"kind": "exact", "question": "PrometheusBadConfig mitigation", "source": "prometheus/PrometheusBadConfig.md"}
+{"kind": "exact", "question": "What is the impact of KubeHpaMaxedOut?", "source": "kubernetes/KubeHpaMaxedOut.md"}
+{"kind": "exact", "question": "How do I diagnose AlertmanagerFailedReload?", "source": "alertmanager/AlertmanagerFailedReload.md"}
+{"kind": "exact", "question": "CPUThrottlingHigh keeps firing for one namespace", "source": "kubernetes/CPUThrottlingHigh.md"}
+{"kind": "paraphrase", "question": "my app keeps dying and kubernetes starts it again over and over", "source": "kubernetes/KubePodCrashLooping.md"}
+{"kind": "paraphrase", "question": "the key-value store behind the control plane has nobody in charge", "source": "etcd/etcdNoLeader.md"}
+{"kind": "paraphrase", "question": "containers are being slowed down because they hit their processor limit", "source": "kubernetes/CPUThrottlingHigh.md"}
+{"kind": "paraphrase", "question": "the autoscaler is already at its ceiling and cannot add more copies", "source": "kubernetes/KubeHpaMaxedOut.md"}
+{"kind": "paraphrase", "question": "a batch workload has been going for over an hour and still has not finished", "source": "kubernetes/KubeJobCompletion.md"}
+{"kind": "paraphrase", "question": "a worker machine has too many open file handles", "source": "node/NodeFileDescriptorLimit.md"}
+{"kind": "paraphrase", "question": "one of the disks in the mirrored array has failed", "source": "node/NodeRAIDDegraded.md"}
+{"kind": "paraphrase", "question": "the connection tracking table on a host is nearly full", "source": "node/NodeHighNumberConntrackEntriesUsed.md"}
+{"kind": "paraphrase", "question": "a worker has almost reached the maximum number of workloads it can host", "source": "kubernetes/KubeletTooManyPods.md"}
+{"kind": "paraphrase", "question": "control plane components are on different releases after an upgrade", "source": "kubernetes/KubeVersionMismatch.md"}
+{"kind": "paraphrase", "question": "we lost contact with a worker machine and its workloads are being moved elsewhere", "source": "kubernetes/KubeNodeUnreachable.md"}
+{"kind": "paraphrase", "question": "there is an alarm that is on all the time on purpose, why?", "source": "general/Watchdog.md"}
+{"kind": "paraphrase", "question": "monitoring cannot reach any of the API servers", "source": "kubernetes/KubeAPIDown.md"}
+{"kind": "paraphrase", "question": "the monitoring server stopped receiving new metric data", "source": "prometheus/PrometheusNotIngestingSamples.md"}
+{"kind": "paraphrase", "question": "metrics are not being shipped to long-term storage", "source": "prometheus/PrometheusRemoteStorageFailures.md"}
+{"kind": "paraphrase", "question": "the monitoring config has a syntax mistake and will not load", "source": "prometheus/PrometheusBadConfig.md"}
+{"kind": "paraphrase", "question": "the database behind kubernetes is close to its size cap", "source": "etcd/etcdBackendQuotaLowSpace.md"}
+{"kind": "paraphrase", "question": "writes to disk are slow on the control plane datastore", "source": "etcd/etcdHighFsyncDurations.md"}
+{"kind": "paraphrase", "question": "a network card keeps going up and down", "source": "general/NodeNetworkInterfaceFlapping.md"}
+{"kind": "paraphrase", "question": "the storage claim for my app is running out of room", "source": "kubernetes/KubePersistentVolumeFillingUp.md"}
+{"kind": "paraphrase", "question": "the component that places workloads on machines has vanished from monitoring", "source": "kubernetes/KubeSchedulerDown.md"}
+{"kind": "paraphrase", "question": "the rollout of a per-node agent is stuck", "source": "kubernetes/KubeDaemonSetRolloutStuck.md"}

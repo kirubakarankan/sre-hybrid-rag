@@ -15,3 +15,6 @@ test:
 
 index:
 	$(PY) search.py index
+
+eval:
+	$(PY) -m evals.run_evals
