@@ -66,8 +66,8 @@ Cost per query: 0 USD. All models run on the local machine.
 Needs Python 3.13, `make`, and [Ollama](https://ollama.com) for the last step.
 
 ```bash
-make setup corpus ingest index   # install, download runbooks, chunk, embed
-make test eval                   # run the tests and print the results table
+make setup index                 # install, download runbooks, chunk, embed
+make lint test eval              # lint, run the tests, print the results table
 ollama pull llama3.2 && .venv/bin/python answer.py "pod keeps restarting, what should I check?"
 ```
 
@@ -89,7 +89,7 @@ To compare the search methods on one question: `.venv/bin/python search.py "pod 
 make test
 ```
 
-27 tests cover chunking, both searches, fusion, reranking, prompt building, citation parsing and the metric. Search tests use the real embedding models on a five-chunk fixture. Answer tests use a fake model and need no Ollama.
+28 tests cover chunking, both searches, fusion, reranking, prompt building, citation parsing and the metric. Search tests use the real embedding models on a five-chunk fixture. Answer tests use a fake model and need no Ollama.
 
 ## Limitations and next steps
 

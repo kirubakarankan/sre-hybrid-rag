@@ -13,14 +13,12 @@ def reciprocal_rank(results, source):
 
 
 if __name__ == "__main__":
-    import chromadb
-
     from rerank import rerank
-    from search import bm25_search, dense_search, hybrid_search
+    from search import bm25_search, dense_search, hybrid_search, load
 
-    chunks = [json.loads(line) for line in open("chunks.jsonl")]
-    index = chromadb.PersistentClient("chroma").get_collection("chunks")
-    questions = [json.loads(line) for line in open(Path(__file__).parent / "questions.jsonl")]
+    chunks, index = load()
+    with open(Path(__file__).parent / "questions.jsonl") as f:
+        questions = [json.loads(line) for line in f]
 
     methods = {
         "BM25": lambda q: bm25_search(chunks, q, K),

@@ -1,5 +1,4 @@
 """Answer a question from retrieved chunks, citing each chunk it used as [n]."""
-import json
 import re
 import sys
 
@@ -37,17 +36,19 @@ def answer(question, chunks, llm):
 
 
 if __name__ == "__main__":
-    import chromadb
+    import httpx
     from langchain_ollama import ChatOllama
 
     from rerank import rerank
-    from search import hybrid_search
+    from search import hybrid_search, load
 
     question = sys.argv[1]
-    chunks = [json.loads(line) for line in open("chunks.jsonl")]
-    index = chromadb.PersistentClient("chroma").get_collection("chunks")
+    chunks, index = load()
     top = rerank(question, hybrid_search(chunks, index, question, k=20))
-    result = answer(question, top, ChatOllama(model="llama3.2", temperature=0))
+    try:
+        result = answer(question, top, ChatOllama(model="llama3.2", temperature=0))
+    except httpx.ConnectError:
+        sys.exit("Ollama is not running. Start it with: ollama serve")
     print(result["answer"], "\n\nSources:")
     for chunk in result["sources"]:
         print(f"  [{top.index(chunk) + 1}] {chunk['id']}  ({chunk['heading']})")

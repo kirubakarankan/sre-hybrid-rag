@@ -1,4 +1,6 @@
-from search import bm25_search, build_dense_index, dense_search, hybrid_search, rrf
+import pytest
+
+from search import bm25_search, build_dense_index, dense_search, hybrid_search, load, rrf
 
 
 def chunk(id, heading, text):
@@ -74,3 +76,9 @@ def test_hybrid_finds_an_exact_alert_name_and_a_paraphrase():
     index = build_dense_index(CHUNKS, path=None)
     assert hybrid_search(CHUNKS, index, "etcdNoLeader")[0]["id"] == "c.md#0"
     assert hybrid_search(CHUNKS, index, "my container keeps dying")[0]["id"] == "a.md#0"
+
+
+def test_load_says_what_to_run_when_the_index_has_not_been_built(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(SystemExit, match="make index"):
+        load()

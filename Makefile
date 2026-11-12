@@ -1,20 +1,38 @@
 PY = .venv/bin/python
+# Pinned so the published results stay reproducible when the upstream runbooks change.
+CORPUS_COMMIT = a685d14cf5128bb30e2bf935c3983decd772d885
+
+.PHONY: setup corpus ingest index test lint eval lock
 
 setup:
 	python3.13 -m venv .venv
-	$(PY) -m pip install -r requirements.txt
+	$(PY) -m pip install -r requirements.lock
 
-corpus:
-	git clone --depth 1 https://github.com/prometheus-operator/runbooks data/runbooks
+corpus: data/runbooks
+ingest: chunks.jsonl
+index: chroma/.indexed
 
-ingest:
+data/runbooks:
+	git clone https://github.com/prometheus-operator/runbooks $@
+	git -C $@ checkout --quiet $(CORPUS_COMMIT)
+
+chunks.jsonl: data/runbooks ingest.py
 	$(PY) ingest.py data/runbooks/content/runbooks
+
+chroma/.indexed: chunks.jsonl search.py
+	$(PY) search.py index
+	touch $@
 
 test:
 	$(PY) -m pytest -q
 
-index:
-	$(PY) search.py index
+lint:
+	$(PY) -m ruff check .
 
-eval:
+eval: chroma/.indexed
 	$(PY) -m evals.run_evals
+
+# Re-create the full list of exact versions after changing requirements.txt.
+lock:
+	$(PY) -m pip install -r requirements.txt
+	$(PY) -m pip freeze > requirements.lock
