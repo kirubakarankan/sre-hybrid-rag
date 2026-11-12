@@ -1,4 +1,4 @@
-# sre-docs-hybrid-rag
+# sre-hybrid-rag
 
 Ask a question about a Kubernetes or Prometheus alert and get an answer from real runbooks, with citations. Hybrid search finds the right runbook for 77% of test questions, against 50% for keyword search alone. Everything runs locally and costs nothing.
 
