@@ -8,6 +8,8 @@ import chromadb
 from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer
 
+from rerank import rerank
+
 
 def words(text):
     return re.findall(r"[a-z0-9]+", text.lower())
@@ -55,6 +57,23 @@ def dense_search(index, query, k=5):
     ]
 
 
+def rrf(ranked_lists, k=5):
+    """Reciprocal Rank Fusion: merge ranked lists using only each chunk's position."""
+    score, chunk_by_id = {}, {}
+    for ranked in ranked_lists:
+        for rank, chunk in enumerate(ranked, start=1):
+            # 60 is the constant from the original RRF paper; it stops rank 1 from dominating.
+            score[chunk["id"]] = score.get(chunk["id"], 0) + 1 / (60 + rank)
+            chunk_by_id[chunk["id"]] = chunk
+    best_first = sorted(score, key=score.get, reverse=True)
+    return [chunk_by_id[id] for id in best_first[:k]]
+
+
+def hybrid_search(chunks, index, query, k=5):
+    # Each search contributes its top 20, so a chunk ranked low by one can still be rescued.
+    return rrf([bm25_search(chunks, query, k=20), dense_search(index, query, k=20)], k)
+
+
 def show(title, chunks):
     print(title)
     for chunk in chunks:
@@ -67,5 +86,8 @@ if __name__ == "__main__":
         build_dense_index(chunks)
         print(f"indexed {len(chunks)} chunks -> chroma/")
     else:
+        index = chromadb.PersistentClient("chroma").get_collection("chunks")
         show("BM25 (keywords)", bm25_search(chunks, sys.argv[1]))
-        show("Dense (meaning)", dense_search(chromadb.PersistentClient("chroma").get_collection("chunks"), sys.argv[1]))
+        show("Dense (meaning)", dense_search(index, sys.argv[1]))
+        show("Hybrid (both, fused)", hybrid_search(chunks, index, sys.argv[1]))
+        show("Hybrid + rerank", rerank(sys.argv[1], hybrid_search(chunks, index, sys.argv[1], k=20)))

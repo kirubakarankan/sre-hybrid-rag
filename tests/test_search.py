@@ -1,4 +1,4 @@
-from search import bm25_search, build_dense_index, dense_search
+from search import bm25_search, build_dense_index, dense_search, hybrid_search, rrf
 
 
 def chunk(id, heading, text):
@@ -49,3 +49,28 @@ def test_rebuilding_the_index_forgets_chunks_that_were_removed():
     build_dense_index(CHUNKS, path=None)
     index = build_dense_index(CHUNKS[:2], path=None)
     assert len(dense_search(index, "node", k=5)) == 2
+
+
+def ids(chunks):
+    return [c["id"] for c in chunks]
+
+
+A, B, C, D = ({"id": letter} for letter in "abcd")
+
+
+def test_rrf_puts_a_chunk_found_by_both_searches_above_one_found_by_a_single_search():
+    assert ids(rrf([[A, B], [C, B]])) == ["b", "a", "c"]
+
+
+def test_rrf_lists_each_chunk_once():
+    assert ids(rrf([[A, B], [A, B]])) == ["a", "b"]
+
+
+def test_rrf_returns_at_most_k_chunks():
+    assert len(rrf([[A, B], [C, D]], k=3)) == 3
+
+
+def test_hybrid_finds_an_exact_alert_name_and_a_paraphrase():
+    index = build_dense_index(CHUNKS, path=None)
+    assert hybrid_search(CHUNKS, index, "etcdNoLeader")[0]["id"] == "c.md#0"
+    assert hybrid_search(CHUNKS, index, "my container keeps dying")[0]["id"] == "a.md#0"
