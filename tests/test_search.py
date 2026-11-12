@@ -1,4 +1,4 @@
-from search import bm25_search
+from search import bm25_search, build_dense_index, dense_search
 
 
 def chunk(id, heading, text):
@@ -31,3 +31,21 @@ def test_returns_at_most_k_chunks():
 
 def test_query_with_no_matching_word_returns_nothing():
     assert bm25_search(CHUNKS, "kafka rebalancing") == []
+
+
+def test_dense_finds_a_chunk_that_shares_no_keyword_with_the_question():
+    question = "my container keeps dying"
+    assert bm25_search(CHUNKS, question) == []
+    index = build_dense_index(CHUNKS, path=None)
+    assert dense_search(index, question)[0]["id"] == "a.md#0"
+
+
+def test_dense_returns_the_chunk_exactly_as_it_was_stored():
+    index = build_dense_index(CHUNKS, path=None)
+    assert dense_search(index, "etcd has lost its leader", k=1) == [CHUNKS[2]]
+
+
+def test_rebuilding_the_index_forgets_chunks_that_were_removed():
+    build_dense_index(CHUNKS, path=None)
+    index = build_dense_index(CHUNKS[:2], path=None)
+    assert len(dense_search(index, "node", k=5)) == 2

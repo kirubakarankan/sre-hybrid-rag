@@ -12,3 +12,6 @@ ingest:
 
 test:
 	$(PY) -m pytest -q
+
+index:
+	$(PY) search.py index
