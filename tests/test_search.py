@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from search import bm25_search, build_dense_index, dense_search, hybrid_search, load, rrf
@@ -80,5 +82,29 @@ def test_hybrid_finds_an_exact_alert_name_and_a_paraphrase():
 
 def test_load_says_what_to_run_when_the_index_has_not_been_built(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
+    with pytest.raises(SystemExit, match="make index"):
+        load()
+
+
+def test_question_words_do_not_outweigh_the_alert_name():
+    noisy = chunk("f.md#0", "SomeAlert > Mitigation", "How do I do this? What should I do?")
+    results = bm25_search([*CHUNKS, noisy], "How do I fix etcdNoLeader?")
+    assert results[0]["id"] == "c.md#0"
+
+
+def test_load_refuses_an_index_that_was_never_finished(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "chunks.jsonl").write_text("")
+    (tmp_path / "chroma").mkdir()
+    with pytest.raises(SystemExit, match="make index"):
+        load()
+
+
+def test_load_refuses_an_index_older_than_the_chunks(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "chroma").mkdir()
+    (tmp_path / "chroma" / ".indexed").touch()
+    (tmp_path / "chunks.jsonl").write_text("")
+    os.utime(tmp_path / "chroma" / ".indexed", (1, 1))
     with pytest.raises(SystemExit, match="make index"):
         load()

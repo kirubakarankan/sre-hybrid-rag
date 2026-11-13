@@ -1,3 +1,5 @@
+import pytest
+
 from ingest import chunk_markdown, ingest
 
 # A small runbook in the same shape as the real ones: front matter, one alert, sections.
@@ -68,3 +70,8 @@ TODO
 """
     chunks = chunk_markdown(text, source="a.md")
     assert [c["heading"] for c in chunks] == ["NodeDown > Meaning"]
+
+
+def test_ingest_stops_when_the_folder_has_no_runbooks(tmp_path):
+    with pytest.raises(SystemExit, match="No markdown files"):
+        ingest(tmp_path)

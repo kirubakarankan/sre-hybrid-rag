@@ -34,6 +34,8 @@ def ingest(root):
     chunks = []
     for path in sorted(root.rglob("*.md")):
         chunks += chunk_markdown(path.read_text(), path.relative_to(root).as_posix())
+    if not chunks:
+        sys.exit(f"No markdown files with content found in {root}")
     return chunks
 
 

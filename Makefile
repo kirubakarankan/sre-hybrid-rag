@@ -21,7 +21,6 @@ chunks.jsonl: data/runbooks ingest.py
 
 chroma/.indexed: chunks.jsonl search.py
 	$(PY) search.py index
-	touch $@
 
 test:
 	$(PY) -m pytest -q

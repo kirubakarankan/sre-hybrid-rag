@@ -11,6 +11,10 @@ from sentence_transformers import SentenceTransformer
 
 from rerank import rerank
 
+# Question words are rare in terse runbooks, so without this they outscore the alert name.
+# Only question words: a longer list (the, is, of ...) scored worse on the evaluation questions.
+STOP_WORDS = set("can do does how i me my should we what when where which who why you".split())
+
 
 def words(text):
     return re.findall(r"[a-z0-9]+", text.lower())
@@ -20,7 +24,7 @@ def bm25_search(chunks, query, k=5):
     # shortcut: the index is rebuilt on every call, which takes milliseconds for a few
     # hundred chunks. Build it once and reuse it when the corpus reaches tens of thousands.
     index = BM25Okapi([words(c["heading"] + " " + c["text"]) for c in chunks])
-    scores = index.get_scores(words(query))
+    scores = index.get_scores([w for w in words(query) if w not in STOP_WORDS])
     best_first = sorted(zip(scores, chunks, strict=True), key=lambda pair: pair[0], reverse=True)
     return [chunk for score, chunk in best_first[:k] if score > 0]
 
@@ -77,8 +81,9 @@ def hybrid_search(chunks, index, query, k=5):
 
 
 def load():
-    if not (Path("chunks.jsonl").exists() and Path("chroma").exists()):
-        sys.exit("No index found. Run: make index")
+    chunks_file, built = Path("chunks.jsonl"), Path("chroma/.indexed")
+    if not (chunks_file.exists() and built.exists()) or chunks_file.stat().st_mtime > built.stat().st_mtime:
+        sys.exit("The index is missing, unfinished or older than chunks.jsonl. Run: make index")
     with open("chunks.jsonl") as f:
         chunks = [json.loads(line) for line in f]
     return chunks, chromadb.PersistentClient("chroma").get_collection("chunks")
@@ -95,6 +100,7 @@ if __name__ == "__main__":
         with open("chunks.jsonl") as f:
             chunks = [json.loads(line) for line in f]
         build_dense_index(chunks)
+        Path("chroma/.indexed").touch()  # written last, so an interrupted build leaves no marker
         print(f"indexed {len(chunks)} chunks -> chroma/")
     else:
         chunks, index = load()

@@ -1,6 +1,6 @@
 # sre-hybrid-rag
 
-Ask a question about a Kubernetes or Prometheus alert and get an answer from real runbooks, with citations. Hybrid search finds the right runbook for 77% of test questions, against 50% for keyword search alone. Everything runs locally and costs nothing.
+Ask a question about a Kubernetes or Prometheus alert and get an answer from real runbooks, with citations. Hybrid search with reranking finds the right runbook for 77% of test questions, against 50% for keyword search alone. Everything runs locally and costs nothing.
 
 ## Demo
 
@@ -49,15 +49,15 @@ flowchart LR
 
 | Method | recall@5 | MRR | recall@5 (exact) | recall@5 (paraphrase) |
 |---|---|---|---|---|
-| BM25 | 0.50 | 0.41 | 0.75 | 0.41 |
+| BM25 | 0.50 | 0.41 | 0.88 | 0.36 |
 | Dense | 0.63 | 0.49 | 0.88 | 0.55 |
-| Hybrid | 0.77 | 0.56 | 0.88 | 0.73 |
-| Hybrid + rerank | 0.77 | 0.62 | 1.00 | 0.68 |
+| Hybrid | 0.73 | 0.53 | 0.88 | 0.68 |
+| Hybrid + rerank | 0.77 | 0.64 | 1.00 | 0.68 |
 
 - **recall@5:** the right runbook is somewhere in the top 5.
 - **MRR:** how high it is ranked (1st place scores 1, 2nd scores 0.5, missing scores 0).
 
-Hybrid search finds more than either search alone. Reranking does not find more, but it ranks the right runbook higher. On paraphrases the reranker lost one question it should have kept.
+Hybrid search finds more than either search alone. Reranking then recovers one more question and ranks the right runbook higher.
 
 Cost per query: 0 USD. All models run on the local machine.
 
@@ -89,7 +89,7 @@ To compare the search methods on one question: `.venv/bin/python search.py "pod 
 make test
 ```
 
-28 tests cover chunking, both searches, fusion, reranking, prompt building, citation parsing and the metric. Search tests use the real embedding models on a five-chunk fixture. Answer tests use a fake model and need no Ollama.
+32 tests cover chunking, both searches, fusion, reranking, prompt building, citation parsing and the metric. Search tests use the real embedding models on a five-chunk fixture. Answer tests use a fake model and need no Ollama.
 
 ## Limitations and next steps
 
@@ -97,7 +97,7 @@ make test
 - **Three of 30 questions fail in every method.** The right runbook is not in the top 20 candidates. A stronger embedding model is the first thing to try.
 - **Small evaluation set.** One question is 3.3 points, so small differences are noise.
 - **Retrieval is measured, answer quality is not.**
-- **BM25 has no stop-word filter,** which may explain why some exact-name questions miss.
+- **BM25 drops question words only** (how, do, what ...). A content word such as "fix" can still outrank an alert name.
 
 ## Where it fits
 
